@@ -158,20 +158,27 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
         return "No outfit suggestion available — cannot generate a fit card."
 
     title = new_item.get("title", "this thrift find")
-    price = new_item.get("price", "?")
+    raw_price = new_item.get("price", 0)
+    # Format price cleanly: drop the decimal if it is a whole number
+    # so $18.0 becomes $18, but $18.50 stays $18.50.
+    if isinstance(raw_price, (int, float)) and float(raw_price) == int(float(raw_price)):
+        price_str = f"${int(float(raw_price))}"
+    else:
+        price_str = f"${float(raw_price):.2f}"
     platform = new_item.get("platform", "a thrift platform")
     style_tags = ", ".join(new_item.get("style_tags", []))
 
     prompt = (
         f"Write a short social-media caption (2–4 sentences) for a thrift find.\n\n"
         f"Item: {title}\n"
-        f"Price: ${price}\n"
+        f"Price: {price_str}\n"
         f"Platform: {platform}\n"
         f"Vibe/style: {style_tags}\n\n"
         f"Outfit idea: {outfit}\n\n"
         f"The caption should sound like a real post — casual, enthusiastic, "
-        f"specific about the vibe. Mention the item, its price, and the platform "
-        f"once each. Do not use generic phrases like 'thrift find of the century'."
+        f"specific about the vibe. Mention the item, its exact price ({price_str}), "
+        f"and the platform once each. Do not use generic phrases like "
+        f"'thrift find of the century'. Do not alter the price — use {price_str} exactly."
     )
 
     return generate(prompt)
