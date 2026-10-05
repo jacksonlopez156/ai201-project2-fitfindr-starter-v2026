@@ -25,9 +25,11 @@ Given a query that matches at least one listing, the agent completes all three
 tool calls and returns a fit card — in at least 4 of 5 tries.
 
 **Why this target:**
-<!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
-     "my search is a plain keyword match and some phrasings will miss" is a
-     real answer. -->
+My search uses plain keyword overlap, which means an unusual phrasing can score
+zero even when a matching item exists in the data. For example, "band shirt"
+scores lower than "graphic tee" even though both describe the same kind of item.
+I set 4 of 5 rather than 5 of 5 to account for one phrasing miss or a rate-limit
+retry that produces an empty model response on the first attempt.
 
 ---
 
@@ -37,66 +39,65 @@ Given a query that matches no listings, the agent stops before calling
 `suggest_outfit` and returns a message naming what to change — 5 of 5 tries.
 
 **Why this target:**
-<!-- Why is 5 of 5 reasonable here when criterion 1 isn't? What's different
-     about this path? -->
+This path is deterministic: the branch only checks whether `search_results` is
+an empty list, which is never ambiguous. There is no model call involved, no
+variation between runs, and no data edge case. Either the list is empty and the
+agent stops, or it isn't. 5 of 5 is the right target because anything less would
+mean the branch is broken on some runs, which is an architectural defect rather
+than an acceptable miss rate.
 
 ---
 
-## 3. Something about state
+## 3. State passes through cleanly: selected_item matches what suggest_outfit received
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know that the item your search found is the same item the
-     next tool received? Name something countable or observable.
-
-     This is the criterion people find hardest, because state failure doesn't
-     look like state failure — it looks like a tool problem. Something that
-     compares session["selected_item"] against what actually reached
-     suggest_outfit is the shape you're after. -->
-
-
+For 5 of 5 successful runs (runs where search_listings returns at least one
+result), `session["selected_item"]` is a dict with a non-empty `"title"` field,
+and the outfit suggestion string returned by `suggest_outfit` contains at least
+one word from that item's title.
 
 **Why this target:**
-
-
+State failure is invisible in the final output — if the wrong item reaches
+`suggest_outfit`, the fit card is generated for the wrong thing and nothing
+crashes. The only way to catch it is to compare what the search found against
+what the outfit tool actually received. I picked "at least one word from the
+title" as the observable because `suggest_outfit` always names the item in its
+response; if the item changed mid-session the name would no longer appear. 5 of
+5 because state passing is either working or broken — there is no version of it
+that works 4 out of 5 times.
 
 ---
 
-## 4. Something about the fit card
+## 4. The fit card mentions the item's price and platform every time
 
-<!-- YOU WRITE THIS ONE.
-
-     The fit card calls a model, so the same input can produce different words
-     each time. That's not a bug — it's the nature of the tool. So what would
-     make it acceptable?
-
-     Think about what you'd actually be unhappy to see. A caption that never
-     mentions the price? Two different items producing the same opening
-     sentence? A card longer than a caption anyone would post? Any of those can
-     be turned into a number. -->
-
-
+For 5 of 5 successful runs, `session["fit_card"]` is a string that contains the
+item's price (as a number, e.g. "24" or "24.0") and the platform name (one of
+"depop", "thredUp", or "poshmark").
 
 **Why this target:**
-
-
+The fit card prompt explicitly asks the model to mention price and platform once
+each. These two facts are what make the caption actionable — without a price and
+a platform, the reader cannot find or buy the item. A caption missing either is
+not a useful fit card. I picked 5 of 5 because the prompt is explicit and the
+model consistently includes what it is asked to include when the instruction is
+direct. If it misses on even one of five tries, the prompt needs to be fixed, not
+the target lowered.
 
 ---
 
-## 5. Your choice
+## 5. The empty-wardrobe path returns a non-empty outfit suggestion
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. Speed, the empty
-     wardrobe path, what happens when the model can't be reached, whether the
-     search respects a price ceiling — anything, as long as it names a number
-     or an observable outcome. -->
-
-
+When the agent is run with an empty wardrobe (`wardrobe["items"]` is `[]`),
+`session["outfit_suggestion"]` is a non-empty string (at least 20 characters)
+in 5 of 5 tries, and `session["fit_card"]` is also non-empty.
 
 **Why this target:**
-
-
+A new user with no saved wardrobe is a realistic case, not an edge case —
+someone just starting to thrift has nothing saved yet. If the agent crashes or
+returns an empty string in this case, it is useless for its primary audience.
+I chose "at least 20 characters" as the observable because an empty string or
+a single-word fallback would technically be non-empty but would not be useful
+advice. 5 of 5 because the empty-wardrobe branch in `suggest_outfit` is a
+deliberate fallback — if it fails, the code is wrong, not the data.
 
 ---
 
