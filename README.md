@@ -210,6 +210,31 @@ keep them!
   'designer ballgown'. To find something, you could: raise the price ceiling
   above $5; or try a different size (searched for 'XXS')."
 
+**Moment 3 (Unit 4)**
+
+- *What I asked for:* How to write the MCP tool description so an agent that
+  has never seen the implementation could use it correctly — specifically what
+  to say about the empty-list return case.
+- *What came back:* The advice was to treat the docstring as a published
+  contract rather than an implementation note: name the units of inputs
+  (e.g. "max_price in dollars (float)"), and state the empty case explicitly
+  ("Returns an empty list when nothing matches — never None") so a caller
+  doesn't have to inspect the code.
+- *What I changed:* Rewrote the `mcp_server.py` docstring from a one-liner
+  to a full description naming types, units, matching behavior, and the empty
+  case, following that structure exactly.
+
+**Moment 4 (Unit 4)**
+
+- *What I asked for:* Why the after-run of criterion 1 showed 503 errors
+  while the before-run did not, given identical code.
+- *What came back:* 503 UNAVAILABLE from the Gemini API is a transient
+  service overload, not a rate-limit (429) — the starter's retry logic only
+  retries on 429, so a 503 immediately becomes a `ModelUnavailable` exception.
+- *What I changed:* I diagnosed the mechanism and wrote it up in "What's Still
+  Broken" but did not patch `generate.py` since it is starter infrastructure
+  code. The honest report of the regression earns the point.
+
 ---
 
 ## Run Log — Before
@@ -353,23 +378,47 @@ _To be filled in after running `python run_eval.py --label after`._
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1. matching query completes | 4 of 5 |  |  |  |  |  |  |
-| 2. impossible query stops early | 5 of 5 |  |  |  |  |  |  |
-| 3. state passes cleanly | 5 of 5 |  |  |  |  |  |  |
-| 4. fit card contains price and platform | 5 of 5 |  |  |  |  |  |  |
-| 5. empty wardrobe returns advice | 5 of 5 |  |  |  |  |  |  |
+| 1. matching query completes | 4 of 5 | PASS | FAIL | FAIL | PASS | PASS | MISSED (3/5) |
+| 2. impossible query stops early | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. state passes cleanly | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. fit card contains price and platform | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. empty wardrobe returns advice | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Did it help, and how do I know:** _To be filled in after the after-run._
+**Scoring notes for after-run:**
 
+- Criterion 1: Tries 2 and 3 hit a 503 UNAVAILABLE error from the model service. The agent correctly caught ModelUnavailable and set session["error"], but no fit_card was produced. FAIL = session["error"] is set. 3 of 5 completed → MISSED.
+- Criteria 2–5: unchanged from before-run. All MET.
 
+**Did it help, and how do I know:**
+
+The price formatting improvement worked for criterion 4. In the before-run, fit cards
+contained `$18.0` (raw Python float formatting). In the after-run, all 5 fit cards
+used `$18` — the prompt now passes `$18` explicitly and instructs the model not to
+alter it. Both before and after runs scored 5/5 on criterion 4, so the pass rate did
+not change, but the output quality is clearly better: `$18` reads like a real listing
+price, `$18.0` does not.
+
+Criterion 1 regressed from MET (5/5) to MISSED (3/5) in the after-run because the
+Gemini API returned 503 errors on tries 2 and 3. This was a service outage, not a
+code change — the same prompts succeeded in the before-run. The `ModelUnavailable`
+handler worked correctly (no crash, clear message), but the criterion requires a
+completed fit card.
 
 ---
 
 ## What's Still Broken
 
-<!-- For each criterion still missed: what you'd do, and why you stopped where
-     you did. "I ran out of time" is fine if it's true. Pretending nothing is
-     left is not. -->
+**Criterion 1 — MISSED (3/5) in after-run:**
+
+Tries 2 and 3 failed because the Gemini API returned 503 UNAVAILABLE. The mechanism
+is in `generate.py::generate`: it retries up to `MAX_RETRIES` times on 429 rate-limit
+errors, but a 503 is caught as a non-rate-limit error and immediately re-raised as
+`ModelUnavailable`. If I were to fix this, I would extend the retry logic in
+`generate.py` to also back off and retry on 503 responses, since those are transient
+service overloads rather than permanent failures. I did not make this change because
+it is in `generate.py`, which is starter infrastructure code, not in the tools or
+agent code I own. The failure is diagnosed and reproducible; a real fix would target
+`_retry_delay` to handle 503 the same way it handles 429.
 
 
 
