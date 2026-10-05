@@ -58,20 +58,22 @@ def _parse_query(query: str) -> dict:
     size = None
     max_price = None
 
-    # --- extract max_price: "under $30", "$30", "under 30" ---
-    price_match = re.search(r"(?:under\s+)?\$?(\d+(?:\.\d+)?)", text, re.I)
-    if price_match:
-        max_price = float(price_match.group(1))
-        text = text[:price_match.start()] + text[price_match.end():]
-
-    # --- extract size: standalone S, M, L, XL, XS, XXS, XXL, or "size N" ---
+    # --- extract size FIRST so numeric sizes (e.g. "size 8") are not
+    #     consumed by the price regex: "size N", or standalone S/M/L/XL/XS/XXS/XXL ---
     size_match = re.search(
-        r"\bsize\s+([A-Z]{1,3}|\d+)\b|(?<!\w)(XXS|XS|XL|XXL|[SML])(?!\w)",
+        r"\bsize\s+([A-Za-z0-9]{1,3})\b|(?<![A-Za-z0-9])(XXS|XS|XL|XXL|[SML])(?![A-Za-z0-9])",
         text, re.I
     )
     if size_match:
         size = (size_match.group(1) or size_match.group(2)).upper()
         text = text[:size_match.start()] + text[size_match.end():]
+
+    # --- extract max_price: requires "under N", "$N", or "under $N" ---
+    # A bare number like "90s" should NOT match here.
+    price_match = re.search(r"(?:under\s+\$?|(?<!\w)\$)(\d+(?:\.\d+)?)", text, re.I)
+    if price_match:
+        max_price = float(price_match.group(1))
+        text = text[:price_match.start()] + text[price_match.end():]
 
     # --- clean up leftover punctuation / filler words ---
     description = re.sub(r"[,\-]+", " ", text).strip()
