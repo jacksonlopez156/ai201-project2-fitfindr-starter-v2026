@@ -4,12 +4,6 @@ The FitFindr planning loop.
 This is the file that makes FitFindr an agent rather than a script. It decides
 which tool to run next based on what the last one returned.
 
-If your loop calls all three tools no matter what comes back, you have a list
-of function calls. A loop looks at the last result before it picks the next
-step. **That branch is the graded part of this unit.**
-
-Build and test your three tools in `tools.py` first. Then come here.
-
     python agent.py          runs both example paths below
 """
 
@@ -17,7 +11,7 @@ import re
 
 import config
 import trace
-from tools import search_listings, suggest_outfit, create_fit_card
+from tools import suggest_outfit, create_fit_card
 from generate import ModelUnavailable
 
 
@@ -112,6 +106,8 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         suggest_outfit, then create_fit_card.
         Implemented in: agent.py::run_agent
     """
+    from mcp_client import call_tool
+
     session = new_session(query, wardrobe)
     iteration = 0
 
@@ -121,16 +117,30 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         trace.check_iterations(iteration)
         parsed = _parse_query(query)
         session["parsed"] = parsed
+        trace.step(
+            "parse_query",
+            inputs={"query": query},
+            returned=parsed,
+        )
 
-        # ── step 2: search listings ───────────────────────────────────────────
+        # ── step 2: search listings via MCP ──────────────────────────────────
         iteration += 1
         trace.check_iterations(iteration)
-        results = search_listings(
-            description=parsed["description"],
-            size=parsed["size"],
-            max_price=parsed["max_price"],
-        )
+        results = call_tool("search_listings", {
+            "description": parsed["description"],
+            "size": parsed["size"],
+            "max_price": parsed["max_price"],
+        })
         session["search_results"] = results
+        trace.step(
+            "search_listings (via MCP)",
+            inputs={
+                "description": parsed["description"],
+                "size": parsed["size"],
+                "max_price": parsed["max_price"],
+            },
+            returned=results,
+        )
 
         # ── BRANCH: if nothing came back, stop here ───────────────────────────
         if not results:
@@ -146,12 +156,21 @@ def run_agent(query: str, wardrobe: dict) -> dict:
                 f"No listings matched '{desc}'. To find something, you could: "
                 + "; or ".join(hints) + "."
             )
+            trace.step(
+                "branch: empty results",
+                note=f"stopping early — {session['error']}",
+            )
             return session
 
         # ── step 3: pick the top result ───────────────────────────────────────
         iteration += 1
         trace.check_iterations(iteration)
         session["selected_item"] = results[0]
+        trace.step(
+            "select_item",
+            inputs={"from": f"{len(results)} results"},
+            returned=session["selected_item"],
+        )
 
         # ── step 4: suggest an outfit ─────────────────────────────────────────
         iteration += 1
@@ -161,6 +180,14 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             wardrobe=session["wardrobe"],
         )
         session["outfit_suggestion"] = outfit
+        trace.step(
+            "suggest_outfit",
+            inputs={
+                "item": session["selected_item"].get("title"),
+                "wardrobe_items": len(wardrobe.get("items", [])),
+            },
+            returned=outfit,
+        )
 
         # ── step 5: create the fit card ───────────────────────────────────────
         iteration += 1
@@ -170,12 +197,18 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             new_item=session["selected_item"],
         )
         session["fit_card"] = fit_card
+        trace.step(
+            "create_fit_card",
+            inputs={"item": session["selected_item"].get("title")},
+            returned=fit_card,
+        )
 
     except ModelUnavailable as exc:
         session["error"] = (
             f"The model couldn't be reached: {exc}. "
             "Check your GEMINI_API_KEY in .env and try again."
         )
+        trace.step("error", note=str(session["error"]))
 
     return session
 
