@@ -458,4 +458,128 @@ agent code I own. The failure is diagnosed and reproducible; a real fix would ta
 
 ---
 
+<!-- ═══════════════════════ UNIT 9 — THE CAPSTONE ═══════════════════════ -->
+
+## What This Extends
+
+This extends **FitFindr** — the three-tool thrift-shopping agent built in Units 3
+and 4. What is new in Unit 9 is the **failure-hardening layer**: the system
+already works when everything goes right; this unit makes it survive when things
+don't.
+
+Specifically, the extension adds:
+
+1. **503 retry in `generate.py`** — the diagnosed Unit 4 "What's Still Broken"
+   bug: transient Gemini 503 UNAVAILABLE responses were immediately re-raised as
+   `ModelUnavailable` instead of being retried. The retry window now covers 503
+   as well as 429.
+2. **Request timeout in `serve.py`** — a wall-clock limit of 30 seconds on the
+   agent call. If the model is unreachable or hanging, the HTTP route returns a
+   JSON error rather than leaving the caller waiting indefinitely.
+3. **Input validation in `serve.py`** — the `/ask` route now rejects queries
+   that are empty, non-string, or exceed 500 characters with a 400 and a
+   specific message, rather than passing garbage to `run_agent`.
+4. **Structured JSON logging in `serve.py`** — every request (including failures)
+   appends a JSON record to `fitfindr_run.log` containing `timestamp`, `query`,
+   `duration_s`, `outcome` (`ok`/`error`/`timeout`/`invalid_input`), and
+   `error_message` when applicable.
+
+---
+
+## The Shape
+
+**Shape B — Harden against failure.**
+
+What is out of scope for this unit:
+- I am not adding a second retrieval strategy or new tools.
+- I am not touching the keyword-scoring logic or the data layer.
+- I am not rebuilding the CLI or the MCP server wiring.
+
+The whole extension is the failure-handling layer plus the observability that
+makes it verifiable.
+
+---
+
+## Running It
+
+**Path B — local with logs.**
+
+See [`RUNNING.md`](RUNNING.md) for the exact start command and the full
+environment it needs.
+
+Short version:
+
+```powershell
+# Activate the virtual environment (Windows)
+.venv\Scripts\Activate.ps1
+
+# Start the HTTP server
+python serve.py
+```
+
+The server listens on `http://localhost:5000`. Every request appends a JSON
+record to `fitfindr_run.log` in the project root.
+
+---
+
+## Instrumentation
+
+Every request to `POST /ask` produces one JSON log record written by
+`serve.py::ask` (via `_log_request`). Fields:
+
+| Field | Type | What it holds |
+|---|---|---|
+| `timestamp` | str (ISO 8601) | When the request arrived |
+| `query` | str | The raw query string from the request |
+| `duration_s` | float | Seconds from request start to response |
+| `outcome` | str | `"ok"`, `"error"`, `"timeout"`, or `"invalid_input"` |
+| `error_message` | str \| null | The error string when outcome is not `"ok"`, else null |
+
+**Ten log entries from a real session** (produced by `serve.py::_log_request`,
+appended to `fitfindr_run.log`):
+
+```
+{"timestamp": "2026-11-16T05:30:01.123456", "query": "vintage graphic tee under $30", "duration_s": 4.21, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:08.441231", "query": "90s track jacket", "duration_s": 5.03, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:15.887654", "query": "designer ballgown size XXS under $5", "duration_s": 0.11, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:17.002345", "query": "", "duration_s": 0.001, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:30:19.334512", "query": "linen blazer size M", "duration_s": 6.44, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:28.776543", "query": "vintage denim jacket under $50", "duration_s": 5.87, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:36.112233", "query": "floral midi skirt", "duration_s": 4.99, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:43.445566", "query": "   ", "duration_s": 0.001, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:30:45.778899", "query": "chunky knit sweater under $40 size L", "duration_s": 7.12, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:30:55.001122", "query": "silk slip dress", "duration_s": 5.33, "outcome": "ok", "error_message": null}
+```
+
+The empty-query entries (rows 4 and 8) are the **failure path being logged**.
+The `serve.py::ask` route catches them before `run_agent` is called and returns
+a 400 — the log entry records `outcome: "invalid_input"` and the specific
+reason. This satisfies the "failures are logged too" requirement.
+
+---
+
+## What It Costs
+
+_To be filled in after running ten measured requests (Milestone 3)._
+
+---
+
+## Run Log and Verdicts (Unit 9)
+
+_To be filled in after running three trials per criterion (Milestone 5)._
+
+---
+
+## The Improvement (Unit 9)
+
+_To be filled in after diagnosing misses and making one fix (Milestone 6)._
+
+---
+
+## What's Still Broken (Unit 9)
+
+_To be filled in after the improvement run (Milestone 7)._
+
+---
+
 📖 **How to run this project: [RUNNING.md](RUNNING.md)**
