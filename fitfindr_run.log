@@ -48,3 +48,42 @@
 {"timestamp": "2026-11-16T05:12:30.642717+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.79, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
 {"timestamp": "2026-11-16T05:12:36.719924+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.81, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
 {"timestamp": "2026-11-16T05:12:42.845303+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.86, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:15:02.753872+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:06.924271+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:11.092741+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:13.254686+00:00", "query": "12345", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:15:17.440923+00:00", "query": "None", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:15:21.609342+00:00", "query": "['vintage', 'tee']", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:15:27.044008+00:00", "query": "vintage graphic tee under $30", "duration_s": 3.275, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:15:29.391914+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:33.531171+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.777, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:15:35.874068+00:00", "query": "999", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:15:40.026232+00:00", "query": "floral midi skirt", "duration_s": 1.805, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:15:42.381263+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:46.757899+00:00", "query": "90s track jacket", "duration_s": 2.032, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:15:49.103633+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:15:53.600945+00:00", "query": "silk slip dress", "duration_s": 2.132, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:15:58.136012+00:00", "query": "denim jacket", "duration_s": 2.159, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:08.313348+00:00", "query": "vintage graphic tee under $30", "duration_s": 1.789, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:10.677850+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:16:15.004574+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.96, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:16:17.353256+00:00", "query": "999", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:16:21.875270+00:00", "query": "floral midi skirt", "duration_s": 2.175, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:24.232474+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:16:28.337407+00:00", "query": "90s track jacket", "duration_s": 1.755, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:30.700063+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:16:34.872598+00:00", "query": "silk slip dress", "duration_s": 1.821, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:39.069052+00:00", "query": "denim jacket", "duration_s": 1.851, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:49.249410+00:00", "query": "vintage graphic tee under $30", "duration_s": 1.81, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:16:51.599349+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:16:55.878916+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.913, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:16:58.226900+00:00", "query": "999", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:17:02.659139+00:00", "query": "floral midi skirt", "duration_s": 2.073, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:17:05.031383+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:17:09.151252+00:00", "query": "90s track jacket", "duration_s": 1.767, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:17:11.522801+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:17:15.675600+00:00", "query": "silk slip dress", "duration_s": 1.804, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:17:19.843867+00:00", "query": "denim jacket", "duration_s": 1.797, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:17:24.978778+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.764, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:17:31.017586+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.762, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:17:37.112946+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.824, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
