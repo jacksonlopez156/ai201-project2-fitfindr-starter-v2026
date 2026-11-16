@@ -99,7 +99,7 @@ def _log_request(
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "query": query,
-        "duration_s": round(duration_s, 2),
+        "duration_s": round(duration_s, 3),
         "outcome": outcome,
         "error_message": error_message,
     }
