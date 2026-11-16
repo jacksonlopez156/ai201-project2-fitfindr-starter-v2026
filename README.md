@@ -536,31 +536,71 @@ Every request to `POST /ask` produces one JSON log record written by
 | `error_message` | str \| null | The error string when outcome is not `"ok"`, else null |
 
 **Ten log entries from a real session** (produced by `serve.py::_log_request`,
-appended to `fitfindr_run.log`):
+appended to `fitfindr_run.log`, 2026-11-16):
 
 ```
-{"timestamp": "2026-11-16T05:30:01.123456", "query": "vintage graphic tee under $30", "duration_s": 4.21, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:08.441231", "query": "90s track jacket", "duration_s": 5.03, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:15.887654", "query": "designer ballgown size XXS under $5", "duration_s": 0.11, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:17.002345", "query": "", "duration_s": 0.001, "outcome": "invalid_input", "error_message": "query is empty"}
-{"timestamp": "2026-11-16T05:30:19.334512", "query": "linen blazer size M", "duration_s": 6.44, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:28.776543", "query": "vintage denim jacket under $50", "duration_s": 5.87, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:36.112233", "query": "floral midi skirt", "duration_s": 4.99, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:43.445566", "query": "   ", "duration_s": 0.001, "outcome": "invalid_input", "error_message": "query is empty"}
-{"timestamp": "2026-11-16T05:30:45.778899", "query": "chunky knit sweater under $40 size L", "duration_s": 7.12, "outcome": "ok", "error_message": null}
-{"timestamp": "2026-11-16T05:30:55.001122", "query": "silk slip dress", "duration_s": 5.33, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:01:20.491825+00:00", "query": "vintage graphic tee under $30", "duration_s": 3.21, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:01:30.118891+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:01:41.237103+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.94, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:01:49.922073+00:00", "query": "12345", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:02:13.268218+00:00", "query": "90s track jacket size M", "duration_s": 7.09, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:02:28.090327+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:03:12.152961+00:00", "query": "vintage denim jacket under $50", "duration_s": 3.39, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:03:29.719128+00:00", "query": "floral midi skirt", "duration_s": 3.88, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:04:10.457083+00:00", "query": "chunky knit sweater under $40 size L", "duration_s": 1.81, "outcome": "ok", "error_message": "No listings matched 'chunky knit sweater'. To find something, you could: raise the price ceiling above $40; or try a different size (searched for 'L')."}
+{"timestamp": "2026-11-16T05:04:26.163731+00:00", "query": "silk slip dress", "duration_s": 1.84, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:05:09.191196+00:00", "query": "linen blazer size M under $45", "duration_s": 4.41, "outcome": "ok", "error_message": null}
 ```
 
-The empty-query entries (rows 4 and 8) are the **failure path being logged**.
-The `serve.py::ask` route catches them before `run_agent` is called and returns
-a 400 — the log entry records `outcome: "invalid_input"` and the specific
-reason. This satisfies the "failures are logged too" requirement.
+Rows 2, 4, and 6 are **failure paths being logged**:
+- Row 2 and 6: empty/whitespace query — rejected by `serve.py::ask` with 400,
+  logged as `invalid_input` before `run_agent` is ever called.
+- Row 4: non-string query (`12345`) — rejected with 400, logged as
+  `invalid_input`.
+- Rows 3 and 9: valid requests that stopped early because search returned
+  nothing — `run_agent` completed but `session["error"]` was set, logged as
+  `ok` with the `error_message` populated.
 
 ---
 
 ## What It Costs
 
-_To be filled in after running ten measured requests (Milestone 3)._
+**Measured per-run cost** (from `measure_cost.py`, 5 runs, cache off,
+`gemini-3.5-flash-lite`, 2026-11-16):
+
+| Run | Duration (s) | Tokens (total) |
+|---|---|---|
+| 1 | 9.14 | 551 |
+| 2 | 4.64 | 563 |
+| 3 | 4.66 | 565 |
+| 4 | 5.06 | 581 |
+| 5 | 4.74 | 548 |
+| **Average** | **5.65** | **562** |
+
+**How I measured it:** `generate.token_counts()` returns the prompt and output
+token counts reported by the Gemini API on each `usage_metadata` field. I
+recorded the delta between counts before and after each `run_agent` call. I ran
+5 times with `AI201_CACHE=0` so each was a live API call. The numbers above are
+what the service actually charged, not an estimate from a pricing page.
+
+**Cost per run:**
+
+Gemini gemini-3.5-flash-lite paid-tier input pricing: $0.075 per 1M tokens.
+(The free tier costs $0, but 100 users a day will exceed the free quota.)
+
+```
+562 tokens / 1,000,000 × $0.075 = $0.000042 per run
+```
+
+**100 users a day:**
+
+Assuming 1 agent run per user per day:
+```
+100 × $0.000042 = $0.0042 per day  (~$0.13 per month)
+```
+
+This is cheap because each run makes exactly 2 model calls and both prompts are
+short (< 300 tokens each). The cost scales directly with daily active users.
 
 ---
 

@@ -1,0 +1,11 @@
+{"timestamp": "2026-11-16T05:01:20.491825+00:00", "query": "vintage graphic tee under $30", "duration_s": 3.21, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:01:30.118891+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:01:41.237103+00:00", "query": "designer ballgown size XXS under $5", "duration_s": 1.94, "outcome": "ok", "error_message": "No listings matched 'designer ballgown'. To find something, you could: raise the price ceiling above $5; or try a different size (searched for 'XXS')."}
+{"timestamp": "2026-11-16T05:01:49.922073+00:00", "query": "12345", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query must be a string"}
+{"timestamp": "2026-11-16T05:02:13.268218+00:00", "query": "90s track jacket size M", "duration_s": 7.09, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:02:28.090327+00:00", "query": "", "duration_s": 0.0, "outcome": "invalid_input", "error_message": "query is empty"}
+{"timestamp": "2026-11-16T05:03:12.152961+00:00", "query": "vintage denim jacket under $50", "duration_s": 3.39, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:03:29.719128+00:00", "query": "floral midi skirt", "duration_s": 3.88, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:04:10.457083+00:00", "query": "chunky knit sweater under $40 size L", "duration_s": 1.81, "outcome": "ok", "error_message": "No listings matched 'chunky knit sweater'. To find something, you could: raise the price ceiling above $40; or try a different size (searched for 'L')."}
+{"timestamp": "2026-11-16T05:04:26.163731+00:00", "query": "silk slip dress", "duration_s": 1.84, "outcome": "ok", "error_message": null}
+{"timestamp": "2026-11-16T05:05:09.191196+00:00", "query": "linen blazer size M under $45", "duration_s": 4.41, "outcome": "ok", "error_message": null}
